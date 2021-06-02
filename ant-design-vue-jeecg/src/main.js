@@ -16,7 +16,7 @@ console.log('ant-design-vue version:', version)
 
 import Viser from 'viser-vue'
 import 'ant-design-vue/dist/antd.less';  // or 'ant-design-vue/dist/antd.less'
-
+import '@/assets/less/global.less'
 import '@/permission' // permission control
 import '@/utils/filter' // base filter
 import Print from 'vue-print-nb-jeecg'

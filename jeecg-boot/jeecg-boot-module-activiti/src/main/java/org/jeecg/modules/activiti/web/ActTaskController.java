@@ -168,7 +168,7 @@ public class ActTaskController {
                 tv.setProcessName(actProcess.getName());
                 tv.setRouteName(actProcess.getRouteName());
             }
-            // 关联业务key
+            // 关联业务key·
             ProcessInstance pi = runtimeService.createProcessInstanceQuery().processInstanceId(tv.getProcInstId()).singleResult();
             tv.setBusinessKey(pi.getBusinessKey());
             ActBusiness actBusiness = actBusinessService.getById(pi.getBusinessKey());

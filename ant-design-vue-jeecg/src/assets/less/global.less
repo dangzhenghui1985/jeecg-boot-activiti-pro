@@ -1,0 +1,170 @@
+::-webkit-scrollbar{
+  width: 6px;
+  height: 2px;
+  background-color: transparent;
+}
+::-webkit-scrollbar-thumb{
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+  background-color: rgba(144, 147, 153, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track{
+  background-color: rgba(0, 0, 0, 0.1);
+}
+.page-block-style{
+  border-radius: 2px;
+  background-color: #fff;
+  padding: 12px;
+}
+.margin4-left{
+  margin-left: 4px;
+}
+.margin8-left{
+  margin-left: 8px;
+}
+.margin12-bottom{
+  margin-bottom: 12px;
+}
+.margin8-bottom{
+  margin-bottom: 8px;
+}
+.margin24-bottom{
+  margin-bottom: 24px !important;
+}
+.computeLabelWidth(@width) {
+  .ant-form-item{
+    .ant-form-item-label{
+      min-width: @width;
+      width: @width;
+    }
+  }
+}
+.search-form-style.ant-form-inline{
+  .ant-form-item{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    .ant-form-item-control-wrapper{
+      width: 100%;
+    }
+  }
+  &.label-width-4{
+    .computeLabelWidth(80px)
+  }
+  &.label-width-5{
+    .computeLabelWidth(90px)
+  }
+  &.label-width-6{
+    .computeLabelWidth(100px)
+  }
+  &.label-width-7{
+    .computeLabelWidth(118px)
+  }
+}
+.ant-checkbox-group.vertical-checkgroup{
+  display: flex;
+  flex-direction: column;
+  .ant-checkbox-wrapper{
+    margin-left: 0;
+  }
+}
+.span-link-btn{
+  display: inline-block;
+  padding: 0 6px;
+  text-decoration: underline;
+  &:hover{
+    text-decoration: underline;
+  }
+}
+.link-btn-table{
+  display: inline-block;
+  padding: 0 6px;
+  text-decoration: none;
+  &.success{
+    color: #52c41a;
+  }
+  &.error{
+    color: #f5222d;
+  }
+}
+.collapse-btn{
+  cursor: pointer;
+  display: inline-block;
+  margin-left: 8px;
+}
+.global-line-subtitle{
+  color: rgba(0, 0, 0, 0.85);
+  font-size: 15px;
+  padding-left: 8px;
+  position: relative;
+  margin-bottom: 14px;
+  &::before{
+    content: '';
+    position: absolute;
+    width: 3px;
+    height: 18px;
+    left: 0;
+    bottom: 1px;
+    background-color: @primary-color;
+  }
+}
+.full-width{
+  width: 100% !important;
+}
+.full-page{
+  width: 100%;
+  height: 100%;
+}
+.global-no-data{
+  font-size: 12px;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.45);
+  &.light-no-data{
+    color: rgba(0, 0, 0, 0.45);
+  }
+}
+/* 列表页面弹出详情抽屉样式 */
+.position-relative {
+  position: relative;
+}
+.detail-ctn-wrap{
+  .detail-item{
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+  .label-text{
+    color: rgba(0, 0, 0, 0.5);
+    margin-right: 2px;
+    min-width: 98px;
+    width: 98px;
+    text-align: right;
+  }
+  .span-value{
+    color: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 100%;
+  }
+  img.span-img{
+    width: 150px;
+    min-width: 150px;
+    height: 150px;
+    min-height: 150px;
+    border: 1px solid #d9d9d9;
+  }
+}
+// 高德地图logo
+.amap-logo, .amap-copyright {
+  display: none !important;
+}
+.flex-between{
+  display: flex;
+  justify-content: space-between;
+}
