@@ -9,7 +9,7 @@
       <a-row style="position:relative">
         <a-table :loading="loading" rowKey="id"
                  :dataSource="data"
-                 :pagination="ipagination"
+                 :pagination="false"
                   ref="table">
           <a-table-column title="#"  width="50">
             <template slot-scope="t,r,i" >
@@ -24,7 +24,7 @@
           <a-table-column title="处理人" dataIndex="assignees"  width="150" align="center">
             <template slot-scope="t">
               <div v-if="t">
-                <span v-for="(item, index) in t" :key="index">
+                <span v-for="item in t">
                   <span v-if="item.isExecutor" style="color: #00DB00;">{{item.username}} </span>
                   <span v-else style="color: #999;">{{item.username}} </span>
                 </span>
@@ -67,15 +67,31 @@
         </a-table>
       </a-row>
     </a-card>
-    <a-card>
-      <p slot="title">
-        <span>实时流程图</span>
-      </p>
-      <a-row style="position:relative">
-        <img :src="imgUrl" />
-        <a-spin size="large" fix v-if="loadingImg"></a-spin>
-      </a-row>
-    </a-card>
+
+    <a-tabs type="card" @change="callback">
+      <a-tab-pane key="1" tab="实时流程图">
+        <a-card>
+          <!--<p slot="title">
+            <span>实时流程图</span>
+          </p>-->
+          <a-row style="position:relative">
+            <img :src="imgUrl" />
+            <a-spin size="large" fix v-if="loadingImg"></a-spin>
+          </a-row>
+        </a-card>
+      </a-tab-pane>
+      <a-tab-pane key="2" tab="表单数据" v-if="lcModa">
+        <a-card>
+          <!--流程表单-->
+          <component :disabled="lcModa.disabled" :is="lcModa.formComponent"
+          :processData="lcModa.processData" :isNew="lcModa.isNew" :task="lcModa.isTask"
+          @afterSubmit="afterSub"
+          @passTask="pass(lcModa.processData)"
+          @backTask="back(lcModa.processData)"
+          @close="lcModa.visible=false,lcModa.disabled = false"></component>
+        </a-card>
+      </a-tab-pane>
+    </a-tabs>
   </div>
 </template>
 
@@ -92,12 +108,16 @@ export default {
       default: '',
       required: true
     },
+    lcModa: {
+      type: Object,
+      required: false
+    }
   },
   data() {
     return {
       url:{
         historicFlow:'/actTask/historicFlow/',
-        getHighlightImg:`${this.doMian}/activiti/models/getHighlightImg/`
+        getHighlightImg:`${window._CONFIG['domianURL']}/activiti/models/getHighlightImg/`
       },
       type: 0,
       loading: false, // 表单加载状态
@@ -112,6 +132,9 @@ export default {
     this.init();
   },
   watch: {
+    procInstId:function(newval ,oldName) {
+      this.init();
+    }
   },
   methods: {
     loadData(){
@@ -146,7 +169,17 @@ export default {
       this.ipagination = pagination;
       // this.loadData();
     },
+    callback(key){
+    },
+    afterSub(){
 
+    },
+    pass(v){
+      this.$emit('passTask',v)
+    },
+    back(v){
+      this.$emit('backTask',v)
+    }
   },
 
 };

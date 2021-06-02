@@ -65,7 +65,13 @@
         <a-divider type="vertical" />
         <a href="javascript:void(0);" @click="updatelc(record.id)">设计流程</a>
         <a-divider type="vertical" />
-        <a-popconfirm title="是否确认删除?" @confirm="deletelc(1,record)" @cancel="deletelc(0)">
+        <a-popconfirm
+          title="是否确认删除?"
+          @confirm="deletelc(1,record)"
+          @cancel="deletelc(0)"
+          okText="Yes"
+          cancelText="No"
+        >
           <a href="javascript:void(0);">删除</a>
         </a-popconfirm>
 
@@ -138,40 +144,58 @@
         // 表头
         columns: [
           {
+            title: '#', width:50,
+            dataIndex: '',
+            key:'rowIndex',
+            align:"center",
+            customRender:function (t,r,index) {
+              return parseInt(index)+1;
+            }
+          },
+          {
             title: '模型id', width:150,
+            align:"center",
             dataIndex: 'id',
           },
           {
             title: '模型名称', width:150,
+            align:"center",
             dataIndex: 'name',
             scopedSlots: { customRender: 'logContent' },
           },
           {
             title: '模型key', width:150,
             dataIndex: 'key',
+            align:"center",
           },
           {
             title: '版本', width:80,
             dataIndex: 'revision',
+            align:"center",
             scopedSlots: { customRender: 'revision' },
           },
           {
             title: '备注描述', width:150,
             dataIndex: 'metaInfo',
+            align:"center",
             scopedSlots: { customRender: 'metaInfo' },
           },
           {
             title: '创建时间', width:150,
             dataIndex: 'createTime',
+            align:"center",
+            // sorter:true
           },
           {
             title: '最后更新时间', width:150,
             dataIndex: 'lastUpdateTime',
+            align:"center",
           },
           {
             title: '操作',width:250,
             dataIndex: '',
             scopedSlots: { customRender: 'make' },
+            align:"center",
           }
         ],
         labelCol: {
@@ -196,7 +220,7 @@
       createObjOk(e) {
         this.createObj.confirmLoading = true;
         this.updateObj.visible = true;
-        this.iframUrl = `${this.doMian}${this.url.create}?name=${this.createObj.name||""}&key=${this.createObj.key||""}&description=${this.createObj.description||""}`
+        this.iframUrl = `${window._CONFIG['domianURL']}${this.url.create}?name=${this.createObj.name||""}&key=${this.createObj.key||""}&description=${this.createObj.description||""}`
         this.createObj.visible = false;
         this.createObj.confirmLoading = false;
       },
@@ -207,7 +231,7 @@
           .loading('稍等。。。', 0.8)
           .then(() => {
             _this.createObj.confirmLoading = true;
-            _this.iframUrl = `${_this.doMian}${_this.url.update}${id}`;
+            _this.iframUrl = `${window._CONFIG['domianURL']}${_this.url.update}${id}`;
             _this.updateObj.visible = true;
             _this.createObj.confirmLoading = false;
           })

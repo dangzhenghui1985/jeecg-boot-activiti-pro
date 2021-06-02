@@ -1,109 +1,156 @@
 <template>
-  <div class="page-block-style">
-    <a-form v-if="showToolbar" layout="inline" class="search-form-style label-width-4" @keyup.enter.native="searchQuery">
-      <a-row>
-        <a-col v-bind="searchFormItemLayout">
-          <a-form-item label="标题">
-            <a-input placeholder="请输入搜索关键词" v-model="queryParam.title"></a-input>
-          </a-form-item>
-        </a-col>
-        <a-col v-bind="searchFormItemLayout">
-          <a-form-item label="状态">
-            <a-select v-model="queryParam.status" placeholder="请选择" :allowClear="true" >
-              <a-select-option value="0">草稿</a-select-option>
-              <a-select-option value="1">处理中</a-select-option>
-              <a-select-option value="2">已结束</a-select-option>
-              <a-select-option value="3">已撤回</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <a-col v-bind="searchFormItemLayout">
-          <a-form-item label="结果">
-            <a-select v-model="queryParam.result" placeholder="请选择" :allowClear="true" >
-              <a-select-option value="0">未提交</a-select-option>
-              <a-select-option value="1">处理中</a-select-option>
-              <a-select-option value="2">通过</a-select-option>
-              <a-select-option value="3">驳回</a-select-option>
-            </a-select>
-          </a-form-item>
-        </a-col>
-        <div v-show="moreSearch">
-          <a-col v-bind="searchFormItemLayout">
-            <a-form-item label="创建时间">
+  <a-card :bordered="false">
+    <!-- 查询区域 -->
+    <div class="table-page-search-wrapper">
+      <a-form layout="inline" @keyup.enter.native="searchQuery">
+        <a-row :gutter="24">
+          <a-col :md="6" :sm="8">
+            <a-form-item label="标题">
+              <a-input placeholder="请输入搜索关键词" v-model="queryParam.title"></a-input>
+            </a-form-item>
+          </a-col>
+          <a-col :md="6" :sm="8">
+            <a-form-item label="状态">
+              <a-select v-model="queryParam.status" placeholder="请选择" :allowClear="true" >
+                <a-select-option value="0">草稿</a-select-option>
+                <a-select-option value="1">处理中</a-select-option>
+                <a-select-option value="2">已结束</a-select-option>
+                <a-select-option value="3">已撤回</a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+          <a-col :md="6" :sm="8">
+            <a-form-item label="结果">
+              <a-select v-model="queryParam.result" placeholder="请选择" :allowClear="true" >
+                <a-select-option value="0">未提交</a-select-option>
+                <a-select-option value="1">处理中</a-select-option>
+                <a-select-option value="2">通过</a-select-option>
+                <a-select-option value="3">驳回</a-select-option>
+              </a-select>
+            </a-form-item>
+          </a-col>
+          <a-col :md="6" :sm="10">
+            <a-form-item label="创建时间" :labelCol="labelCol" :wrapperCol="wrapperCol">
               <a-range-picker
+                style="width: 210px"
                 v-model="queryParam.createTimeRange"
                 format="YYYY-MM-DD"
                 :placeholder="['开始时间', '结束时间']"
                 @change="onDateChange"
-                @ok="onDateOk" />
+                @ok="onDateOk"
+              />
             </a-form-item>
           </a-col>
-        </div>
-        <a-col v-bind="searchFormItemLayout" class="margin8-left">
-          <a-form-item >
-            <a-button type="primary" @click="searchQuery" icon="search">查询</a-button>
-            <a-button @click="searchReset" class="margin8-left" icon="reload">重置</a-button>
-            <a class="collapse-btn" @click="moreSearch=!moreSearch">
-              {{ moreSearch ? '收起' : '展开' }}
-              <a-icon :type="moreSearch ? 'up' : 'down'" />
-            </a>
-          </a-form-item>
-        </a-col>
-      </a-row>
-    </a-form>
-    <div class="margin12-bottom" v-if="showToolbar">
-      <a-button type="primary" @click="addApply" :loading="addApplyLoading" icon="plus-circle">发起申请</a-button>
+
+          <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
+            <a-col :md="6" :sm="12" >
+                <a-button type="primary"  style="left: 10px" @click="searchQuery" icon="search">查询</a-button>
+                <a-button type="primary"  @click="searchReset" icon="reload" style="margin-left: 8px;left: 10px">重置</a-button>
+            </a-col>
+          </span>
+          <span style="float: right;overflow: hidden;" class="table-page-search-submitButtons">
+            <a-col :md="12" :sm="12" >
+                <a-button type="primary" @click="addApply" :loading="addApplyLoading" style="left: 10px"  icon="plus-circle">发起申请</a-button>
+            </a-col>
+          </span>
+
+        </a-row>
+      </a-form>
     </div>
+
     <!-- table区域-begin -->
-    <a-table
-      bordered
-      :size="showToolbar?'middle':'small'"
-      rowKey="id"
+    <a-table :scroll="scroll" bordered
       ref="table"
+      size="middle"
+      rowKey="id"
       :dataSource="dataSource"
       :pagination="ipagination"
       :loading="loading"
       @change="handleTableChange">
-      <a-table-column title="标题" dataIndex="title" :ellipsis="true"></a-table-column>
-      <a-table-column v-if="showToolbar" title="所属流程" dataIndex="processName" :ellipsis="true"></a-table-column>
-      <a-table-column title="状态" dataIndex="status" :width="80" align="center" key="s" :sorter="(a,b)=>a.status - b.status">
-        <template slot-scope="t">
-          <a-tag v-if="t*1>0" :color="getStatus(t).color">{{getStatus(t).text}}</a-tag>
-          <span v-else>草稿</span>
+      <a-table-column title="#"  :width="50">
+        <template slot-scope="t,r,i" >
+          <span> {{i+1}} </span>
         </template>
       </a-table-column>
-      <a-table-column v-if="showToolbar" title="结果" dataIndex="result" align="center" key="result" :sorter="(a,b)=>a.result - b.result">
-        <template slot-scope="t">
-          <span> {{getResult(t)}} </span>
+      <a-table-column title="标题" dataIndex="title"  :width="150" align="center">
+        <template slot-scope="t,r,i">
+          <span> {{t}} </span>
         </template>
       </a-table-column>
-      <a-table-column v-if="showToolbar" title="创建时间" dataIndex="createTime" :ellipsis="true"></a-table-column>
-      <a-table-column title="提交申请时间" dataIndex="applyTime" :ellipsis="true"></a-table-column>
-      <a-table-column title="操作" dataIndex="" :width="200">
-        <template slot-scope="t,r">
-          <template v-if="r.status*1 === 0">
-            <a class="link-btn-table" @click="apply(r)">提交申请</a>
-            <a class="link-btn-table" @click="edit(r)">编辑</a>
+      <a-table-column title="所属流程" dataIndex="processName"  :width="150" align="center">
+        <template slot-scope="t,r,i">
+          <span> {{t}} </span>
+        </template>
+      </a-table-column>
+      <a-table-column title="当前审批环节" dataIndex="currTaskName"  :width="150" align="center">
+        <template slot-scope="t,r,i">
+          <span> {{t}} </span>
+        </template>
+      </a-table-column>
+      <a-table-column title="状态" dataIndex="status"  :width="150" align="center"
+        key="s" :sorter="(a,b)=>a.status - b.status"
+      >
+        <template slot-scope="t,r,i">
+          <span :style="{color:getStatus(t).color}"> {{getStatus(t).text}} </span>
+        </template>
+      </a-table-column>
+      <a-table-column title="结果" dataIndex="result"  :width="150" align="center"
+                      key="result" :sorter="(a,b)=>a.result - b.result"
+      >
+        <template slot-scope="t,r,i">
+          <span :style="{color:getResult(t).color}"> {{getResult(t).text}} </span>
+        </template>
+      </a-table-column>
+      <a-table-column title="创建时间" dataIndex="createTime"  :width="150" align="center">
+        <template slot-scope="t,r,i">
+          <span> {{t}} </span>
+        </template>
+      </a-table-column>
+      <a-table-column title="提交申请时间" dataIndex="applyTime"  :width="150" align="center">
+        <template slot-scope="t,r,i">
+          <span> {{t}} </span>
+        </template>
+      </a-table-column><!--
+      <a-table-column title="流程实例状态" dataIndex="procInstStatus"  :width="150" align="center">
+        <template slot-scope="t,r,i">
+          <span> {{t}} </span>
+        </template>
+      </a-table-column>-->
+      <a-table-column title="操作" dataIndex=""  align="center">
+        <template slot-scope="t,r,i">
+          <template v-if="r.status == 0">
+            <a href="javascript:void(0);" style="color: #00A0E9" @click="apply(r)" >提交申请</a>
+            <a-divider type="vertical" />
+            <a href="javascript:void(0);" @click="edit(r)" style="color: #000000">编辑提交数据</a>
+            <a-divider type="vertical" />
             <a-popconfirm title="确定删除吗?" @confirm="() => remove(r)">
-              <a class="link-btn-table error">删除</a>
+              <a href="javascript:void(0);"  style="color: red">删除</a>
             </a-popconfirm>
+
           </template>
-          <template v-else-if="r.status*1 === 1">
-            <a class="link-btn-table" @click="cancel(r)">撤回</a>
-            <a class="link-btn-table" @click="history(r)">查看进度</a>
-            <a class="link-btn-table" @click="detail(r)">表单数据</a>
-          </template>   
-          <template v-else-if="(r.status*1 === 2 && r.result*1 === 3) || r.status*1 === 3">
+          <template v-else-if="r.status == 1">
+
+            <a href="javascript:void(0);" v-if="r.procInstStatus == 1" @click="cancel(r)"  style="color:#8000ff;">撤回</a>
+            <a-divider type="vertical" v-if="r.procInstStatus == 1"/>
+            <a href="javascript:void(0);" @click="history(r)" style="color:blue;">查看进度</a>
+            <a-divider type="vertical" />
+            <a href="javascript:void(0);" @click="detail(r)" style="color:#999;">表单数据</a>
+          </template>
+          <template v-else-if="(r.status == 2 && r.result == 3) || r.status == 3">
             <a-popconfirm title="确定提交申请吗?" @confirm="() => apply(r)">
-              <a class="link-btn-table">重新申请</a>
+              <a href="javascript:void(0);" style="color:#00A0E9;">重新申请</a>
             </a-popconfirm>
-            <a class="link-btn-table" @click="edit(r, false)">编辑</a>
-            <a class="link-btn-table" @click="history(r)">审批历史</a>
+            <a-divider type="vertical" />
+            <a href="javascript:void(0);" @click="edit(r)" style="color:#000000;">编辑</a>
+            <a-divider type="vertical" />
+            <a href="javascript:void(0);" @click="history(r)" style="color:blue;">审批历史</a>
           </template>
           <template v-else>
-            <a class="link-btn-table" @click="detail(r)">表单数据</a>
-            <a class="link-btn-table" @click="history(r)">审批历史</a>
+            <a href="javascript:void(0);" @click="detail(r)" style="color:#999;">表单数据</a>
+            <a-divider type="vertical" />
+            <a href="javascript:void(0);" @click="history(r)" style="color:blue;">审批历史</a>
           </template>
+
         </template>
       </a-table-column>
     </a-table>
@@ -200,16 +247,11 @@
         <a-button type="primary" :disabled="submitLoading" @click="handelSubmitCancel">提交</a-button>
       </div>
     </a-modal>
-  </div>
+  </a-card>
 
 </template>
 
 <script>
-import CommonTableMixin from '@/mixins/CommonTableMixin'
-
-
-
-
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import { activitiMixin } from '@/views/activiti/mixins/activitiMixin'
   import { filterObj } from '@/utils/util';
@@ -221,13 +263,7 @@ import CommonTableMixin from '@/mixins/CommonTableMixin'
   import historicDetail from '@/views/activiti/historicDetail'
   export default {
     name: "applyList",
-    mixins:[CommonTableMixin, activitiMixin,JeecgListMixin],
-    props: {
-      showToolbar: {
-        type: Boolean,
-        default: true
-      }
-    },
+    mixins:[activitiMixin,JeecgListMixin],
     components: {
       JEllipsis
       ,JTreeSelect
@@ -235,7 +271,6 @@ import CommonTableMixin from '@/mixins/CommonTableMixin'
     },
     data () {
       return {
-        moreSearch: false,
         description: '我的申请',
         dictOptions:[],
         url: {
@@ -316,7 +351,7 @@ import CommonTableMixin from '@/mixins/CommonTableMixin'
       },
       getProcessList() {
         this.addApplyLoading = true;
-        this.postFormAction(this.url.getProcessDataList,{status:1,roles:true}).then(res => {
+        this.getAction(this.url.getProcessDataList,{status:1,roles:true}).then(res => {
           this.activeKeyAll = [];
           if (res.success) {
             var result = res.result||[];
@@ -383,32 +418,41 @@ import CommonTableMixin from '@/mixins/CommonTableMixin'
       onDateOk(value) {
         console.log(value);
       },
+
       getStatus(status) {
         let text = "未知", color = "";
-        if (status == 1) {
+        if (status == 0) {
+          text = "草稿";
+          color = "default";
+        } else if (status == 1) {
           text = "处理中";
           color = "orange";
         } else if (status == 2) {
           text = "已结束";
-          color = "green";
+          color = "blue";
         } else if (status == 3) {
           text = "已撤回";
-          color = "red";
+          color = "magenta";
         }
-        return {text, color}
+        return {text:text,color:color}
       },
       getResult(result) {
-        let text = "未知"
+        let text = "未知",
+          color = "";
         if (result == 0) {
           text = "未提交";
+          color = "default";
         } else if (result == 1) {
           text = "处理中";
+          color = "orange";
         } else if (result == 2) {
           text = "已通过";
+          color = "green";
         } else if (result == 3) {
           text = "已驳回";
+          color = "red";
         }
-        return text
+        return {text:text,color:color}
       },
       apply(v) {
         if (!v.procDefId || v.procDefId == "null") {
@@ -419,7 +463,7 @@ import CommonTableMixin from '@/mixins/CommonTableMixin'
         this.form.procDefId = v.procDefId;
         this.form.title = v.title;
         // 加载审批人
-        this.getAction(this.url.getFirstNode,{procDefId:v.procDefId}).then(res => {
+        this.getAction(this.url.getFirstNode,{procDefId:v.procDefId,tableId:v.tableId,tableName:v.tableName}).then(res => {
           if (res.success) {
             if (res.result.type == 3 || res.result.type == 4) {
               this.isGateway = true;

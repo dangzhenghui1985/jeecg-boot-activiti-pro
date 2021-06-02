@@ -28,7 +28,7 @@
       </div>
 
       <a-row>
-        <a-table  bordered
+        <a-table :scroll="scroll" bordered
           :loading="loading"
           rowKey="id"
           :dataSource="data"
@@ -36,22 +36,22 @@
           @change="handleTableChange"
           ref="table"
         >
-          <a-table-column title="#"  :width="20">
+          <a-table-column title="#"  :width="50">
             <template slot-scope="t,r,i" >
               <span> {{i+1}} </span>
             </template>
           </a-table-column>
-          <a-table-column title="任务名称" dataIndex="name"  :width="120" align="center">
+          <a-table-column title="任务名称" dataIndex="name"  :width="150" align="center">
             <template slot-scope="t,r,i">
               <span> {{t}} </span>
             </template>
           </a-table-column>
-          <a-table-column title="所属流程" dataIndex="processName"  :width="110" align="center">
+          <a-table-column title="所属流程" dataIndex="processName"  :width="150" align="center">
             <template slot-scope="t,r,i">
               <span> {{t}} </span>
             </template>
           </a-table-column>
-          <a-table-column title="委托代办人" dataIndex="owner"  :width="130" align="center">
+          <a-table-column title="委托人" dataIndex="owner"  :width="130" align="center">
             <template slot-scope="t,r,i">
               <span> {{t}} </span>
             </template>
@@ -71,13 +71,17 @@
               <span v-else style="color: #999;"> 无 </span>
             </template>
           </a-table-column>
-          <a-table-column title="审批操作" dataIndex="deleteReason"  :width="110" align="center">
+          <a-table-column title="审批操作" dataIndex="deleteReason"  :width="100" align="center">
             <template slot-scope="t">
               <span> {{t}} </span>
             </template>
           </a-table-column>
-
-          <a-table-column title="耗时" dataIndex="duration"  :width="80" align="center"
+          <a-table-column title="审批意见" dataIndex="comment"  :width="100" align="center">
+            <template slot-scope="t">
+              <j-ellipsis :value="t" :length="10"/>
+            </template>
+          </a-table-column>
+          <a-table-column title="耗时" dataIndex="duration"  :width="100" align="center"
                           key="duration" :sorter="(a,b)=>a.duration - b.duration"
                           >
             <template slot-scope="t">
@@ -89,7 +93,7 @@
               <span> {{t}} </span>
             </template>
           </a-table-column>
-          <a-table-column title="操作" dataIndex="action"  :width="130" align="center">
+          <a-table-column title="操作" dataIndex="action"   align="center">
             <template slot-scope="t,r,i">
               <a href="javascript:void(0);" @click="detail(r)" >表单数据</a>
               <a-divider type="vertical" />
@@ -178,7 +182,7 @@ export default {
     },
     getDataList() {
       this.loading = true;
-      this.postFormAction(this.url.doneList,this.searchForm).then(res => {
+      this.getAction(this.url.doneList,this.searchForm).then(res => {
         this.loading = false;
         if (res.success) {
           this.data = res.result||[];
@@ -209,20 +213,23 @@ export default {
         );
         return;
       }
-      this.lcModa.disabled = true;
-      this.lcModa.title = '查看流程业务信息：'+r.processName;
-      this.lcModa.formComponent = this.getFormComponent(r.routeName).component;
-      this.lcModa.processData = r;
-      this.lcModa.isNew = false;
-      this.lcModa.visible = true;
     },
-    history(v) {
-      if (!v.procInstId) {
+    history(r) {
+      if (!r.procInstId) {
         this.$message.error("流程实例ID不存在");
         return;
       }
-      this.procInstId = v.procInstId;
+      this.procInstId = r.procInstId;
       this.modalLsVisible = true;
+
+      this.lcModa.disabled = true
+      this.lcModa.title = '查看流程业务信息：' + r.processName
+      this.lcModa.formComponent = this.getFormComponent(r.routeName).component
+      this.lcModa.processData = r
+      this.lcModa.isNew = false
+      this.lcModa.isTask = true
+      this.lcModa.visible = true
+
     },
     remove(v) {
       this.postFormAction(this.url.deleteHistoricTask+v.id).then(res => {

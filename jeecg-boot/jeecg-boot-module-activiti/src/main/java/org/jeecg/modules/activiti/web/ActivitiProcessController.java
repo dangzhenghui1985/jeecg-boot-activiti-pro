@@ -58,7 +58,7 @@ public class ActivitiProcessController {
 
     @AutoLog(value = "流程-获取可用流程")
     @ApiOperation(value="流程-获取可用流程", notes="获取可用流程")
-    @RequestMapping(value = "/listData" ,method = {RequestMethod.POST})
+    @RequestMapping(value = "/listData" ,method = {RequestMethod.POST,RequestMethod.GET})
     public Result listData(@ApiParam(value = "流程名称" )String lcmc,
                            @ApiParam(value = "流程key" )String lckey,
                            @ApiParam(value = "是否最新" )Boolean zx,

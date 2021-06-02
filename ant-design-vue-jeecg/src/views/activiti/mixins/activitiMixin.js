@@ -18,11 +18,11 @@ export const activitiMixin = {
     allFormComponent:function(){
       return [
         {
-          text:'demo',
+          text:'示例表单',
           routeName:'@/views/activiti/form/demoForm',
           component:() => import(`@/views/activiti/form/demoForm`),
-          businessTable:'demo'
-        },
+          businessTable:'test_demo'
+        }
       ]
     },
     historicDetail:function () {

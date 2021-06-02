@@ -136,7 +136,7 @@
     </a-table>
     <!-- table区域-end -->
     <!--编辑-->
-    <a-modal
+    <a-modal  width="900px"
       :confirmLoading="confirmLoading"
       title="编辑流程"
       :visible="editObj.visible"
@@ -148,6 +148,12 @@
           <component :is="LcDict" :trigger-change="true" v-decorator="[ 'categoryId', {initialValue:editObj.categoryId, rules: [{ required: true, message: '不能为空' }] },]"
                        placeholder="请选择流程分类" dictCode="bpm_process_type" ></component>
         </a-form-item>
+        <a-form-item :label-col="labelCol" :wrapper-col="wrapperCol" label="流程类目(app使用)" >
+          <j-tree-dict placeholder="请选择流程类目" parentCode="A01"
+                       :trigger-change="true" v-decorator="[ 'typeId', {initialValue:editObj.typeId, rules: [{ required: true, message: '不能为空' }] },]"
+          >
+          </j-tree-dict>
+        </a-form-item>
         <a-form-item :label-col="labelCol" :wrapper-col="wrapperCol" label="关联表单" >
           <a-select @change="change_routeName" placeholder="请选择关联表单" :trigger-change="true" v-decorator="[ 'routeName', {initialValue:editObj.routeName, rules: [{ required: true, message: '不能为空' }] },]">
             <a-select-option value="">请选择</a-select-option>
@@ -157,12 +163,26 @@
               </span>
             </a-select-option>
           </a-select>
-
-          <a-button   type="link" @click="viewForm"  >预览表单</a-button>
-<!--          <a href="javascrip:void(0)" @click="viewForm">预览表单</a>-->
+          <a href="javascrip:void(0)" @click="viewForm()">预览表单</a>
         </a-form-item>
+
+<!--        <a-form-item :label-col="labelCol" :wrapper-col="wrapperCol" label="关联打印报表" >
+          <a-select @change="change_routeName" placeholder="请选择关联报表" :trigger-change="true" v-decorator="[ 'reportModelId', {initialValue:editObj.reportModelId, rules: [{ required: true, message: '不能为空' }] },]">
+            <a-select-option value="">请选择</a-select-option>
+            <a-select-option v-for="(item, i) in reportList" :key="item.id" :value="item.id">
+              <span style="display: inline-block;width: 100%" :title=" item.name">
+                {{ item.name}}
+              </span>
+            </a-select-option>
+          </a-select>
+          &lt;!&ndash;<a href="javascrip:void(0)" @click="viewForm()">预览表单</a>&ndash;&gt;
+        </a-form-item>-->
+
         <a-form-item :label-col="labelCol" :wrapper-col="wrapperCol" label="角色授权" >
           <j-select-role placeholder="不选择则所有人可用" v-decorator="[ 'roles', {initialValue:editObj.roles, rules: []}]"/>
+        </a-form-item>
+        <a-form-item :label-col="labelCol" :wrapper-col="wrapperCol" label="排序" >
+          <a-input-number  v-decorator="[ 'sort', {initialValue:editObj.sort, rules: []}]" placeholder="排序"/>
         </a-form-item>
         <a-form-item :label-col="labelCol" :wrapper-col="wrapperCol" label="备注描述" >
           <a-textarea  v-decorator="[ 'description', {initialValue:editObj.description, rules: []}]" placeholder="备注描述" :autoSize="{ minRows: 3, maxRows: 5 }" />
@@ -205,7 +225,8 @@
                   <!-- 0角色 1用户 2部门 3发起人 4发起人的部门负责人-->
                 <a-checkbox value="0"> 根据角色选择 </a-checkbox>
                 <a-checkbox value="1"> 直接选择人员 </a-checkbox>
-                <a-checkbox value="2"> 部门负责人 </a-checkbox>
+                <a-checkbox value="2"> 部门 </a-checkbox>
+                <a-checkbox value="5"> 部门负责人 </a-checkbox>
                 <a-checkbox value="3">
                   发起人
                   <a-tooltip placement="topLeft" title="自动获取发起人">
@@ -215,6 +236,12 @@
                 <a-checkbox value="4">
                   发起人的部门负责人
                   <a-tooltip placement="topLeft" title="自动获取发起人所在部门的负责人，即其上级领导。（如果其本身就是部门负责人，则指向发起人自己。）">
+                    <a-icon type="exclamation-circle" />
+                  </a-tooltip>
+                </a-checkbox>
+                <a-checkbox value="6">
+                  表单变量
+                  <a-tooltip placement="topLeft" title="填写与表单中相对应的变量，role:角色，user:人员：dept:部门：deptManage:部门负责人; 例如：variable:role,variable2:user;">
                     <a-icon type="exclamation-circle" />
                   </a-tooltip>
                 </a-checkbox>
@@ -231,6 +258,12 @@
             </a-form-item>
             <a-form-item :label-col="labelCol" :wrapper-col="wrapperCol" label="选择部门" v-if="spryTypes.indexOf('2')>-1" >
               <j-select-depart v-model="spry.departmentIds" :multi="true"></j-select-depart>
+            </a-form-item>
+            <a-form-item :label-col="labelCol" :wrapper-col="wrapperCol" label="选择部门负责人" v-if="spryTypes.indexOf('5')>-1" >
+              <j-select-depart v-model="spry.departmentManageIds" :multi="true"></j-select-depart>
+            </a-form-item>
+            <a-form-item :label-col="labelCol" :wrapper-col="wrapperCol" label="输入表单变量" v-if="spryTypes.indexOf('6')>-1" >
+              <a-input v-model="spry.formVariables" :multi="true"></a-input>
             </a-form-item>
             <!--btn-->
             <a-form-item :wrapper-col="{ span: 12, offset: 5 }">
@@ -265,26 +298,32 @@
 </template>
 
 <script>
+  import pick from "lodash.pick";
   import { filterObj } from '@/utils/util';
   import { JeecgListMixin } from '@/mixins/JeecgListMixin'
   import { activitiMixin } from '@/views/activiti/mixins/activitiMixin'
   import JEllipsis from '@/components/jeecg/JEllipsis'
   import { deleteAction, getAction,downFile } from '@/api/manage'
-  import pick from "lodash.pick";
   import JTreeSelect from '@/components/jeecg/JTreeSelect'
+  import JTreeDict from '@/components/jeecg/JTreeDict'
   import {initDictOptions, filterDictText} from '@/components/dict/JDictSelectUtil'
   import JSelectUserByDep from '@/components/jeecgbiz/JSelectUserByDep'
   import JSelectRole from '@/components/jeecgbiz/JSelectRole'
   import JSelectDepart from '@/components/jeecgbiz/JSelectDepart'
+
   export default {
     name: "ProcessModelList",
     mixins:[activitiMixin,JeecgListMixin],
     components: {
       JEllipsis,JSelectUserByDep,JSelectRole,JSelectDepart
-      ,JTreeSelect
+      ,JTreeSelect,JTreeDict
+    },
+    created(){
+      // this.initReportList();
     },
     data () {
       return {
+        reportList:[],
         viewImage:false,
         viewTitle:"",
         diagramUrl:"",
@@ -299,6 +338,7 @@
         queryParam: {
           createTimeRange:[],
           keyWord:'',
+          zx:true
         },
         tabKey: "1",
         // 表头
@@ -338,6 +378,8 @@
           userIds:'',
           roleIds:'',
           departmentIds:'',
+          departmentManageIds:'',
+          formVariables:'',
           chooseSponsor:false,
           chooseDepHeader:false,
         },
@@ -347,7 +389,8 @@
           formComponent : null
         },
         lcTypeF:[],
-        dataList: []
+        dataList: [],
+        updateRow: {}
       }
     },
     computed:{
@@ -358,6 +401,16 @@
       },
     },
     methods: {
+      /*initReportList(){
+        // 加载reportList
+        getAction('/report/reportModel/all',{}).then(res=>{
+          if(res.success){
+            this.reportList = res.result;
+          }
+        }).catch(()=>{
+          console.log("字典加载失败");
+        });
+      },*/
       initDictConfig() {
         //初始化字典 - 流程分类
         initDictOptions('bpm_process_type').then((res) => {
@@ -395,7 +448,7 @@
         console.log('onChange:', node);
         this.current = index;
         this.editNode = node;
-        /* 0角色 1用户 2部门 3发起人 4发起人的部门负责人*/
+        /* 0角色 1用户 2部门 3发起人 4发起人的部门负责人 5部门的部门负责人*/
         this.spry.chooseDepHeader = node.chooseDepHeader||false;
         if (this.spry.chooseDepHeader) this.spryTypes.push('4') ;
         this.spry.chooseSponsor = node.chooseSponsor||false;
@@ -418,15 +471,25 @@
         }
         this.spry.departmentIds = departmentIds.join(",")
         if (departmentIds.length>0) this.spryTypes.push('2') ;
+        var departmentManageIds = []
+        for (const departmentManage of node.departmentManages || []){
+          departmentManageIds.push(departmentManage.id);
+        }
+        this.spry.departmentManageIds = departmentManageIds.join(",")
+        if (departmentManageIds.length>0) this.spryTypes.push('5') ;
         console.log("回显this.spry",this.spry)
 
+        this.spry.formVariables = node.formVariables||'';
+        if (this.spry.formVariables) this.spryTypes.push('6');
       },
       spryType(types){
-        /* 0角色 1用户 2部门 3发起人 4发起人的部门负责人*/
+        /* 0角色 1用户 2部门 3发起人 4发起人的部门负责人 5部门负责人*/
         // this.spryTypes = types;
         if (this.spryTypes.indexOf('0')==-1) this.spry.roleIds = '';
         if (this.spryTypes.indexOf('1')==-1) this.spry.userIds = '';
         if (this.spryTypes.indexOf('2')==-1) this.spry.departmentIds = '';
+        if (this.spryTypes.indexOf('5')==-1) this.spry.departmentManageIds = '';
+        if (this.spryTypes.indexOf('6')==-1) this.spry.formVariable = '';
         //是否选中发起人
         this.spry.chooseSponsor = this.spryTypes.indexOf('3')>-1 ;
         //是否选中发起人的部门领导
@@ -442,17 +505,21 @@
         }
         _this.confirmLoading = true;
         this.spry.nodeId = this.editNode.id;
+        this.spry.procDefId = this.editNode.procDefId;
         this.postFormAction(_this.url.editNodeUser,this.spry).then(res => {
           if (res.success) {
             _this.$message.success("操作成功");
-            // _this.getData();
+            /*保存成功后回显数据*/
+            _this.getNodeData(_this.updateRow);
           }else {
             _this.$message.error(res.message);
           }
         }).finally(() => _this.confirmLoading = false);
       },
+      /*节点设置*/
       getNodeData(row){
-        var _this = this;
+        let _this = this;
+        _this.updateRow = row;
         _this.postFormAction(_this.url.getProcessNode,{
           id:row.id
         }).then(res => {
@@ -461,7 +528,8 @@
             _this.nodeList = res.result||[];
             console.log("_this.nodeList",_this.nodeList);
             if (_this.nodeList.length>0){
-              _this.editNode = _this.nodeList[0];
+              _this.editNode = _this.nodeList[_this.current];
+              console.log(_this.current,_this.editNode)
               _this.showProcessNodeEdit = true;
             }
           }else {
@@ -504,16 +572,15 @@
         })
       },
       viewForm(routeName) {
-
-        // if (!routeName) routeName = this.editObj.routeName;
-        // if (!routeName) {
-        //   this.$message.warning(
-        //     "请先选择表单！"
-        //   );
-        //   return;
-        // }
-        debugger
-        let formComponent = this.getFormComponent(this.editObj.routeName);
+        if (!routeName) routeName = this.editObj.routeName;
+        if (!routeName) {
+          this.$message.warning(
+            "请先选择表单！"
+          );
+          return;
+        }
+        let formComponent = this.getFormComponent(routeName);
+        console.log(formComponent)
         this.lcModa.formComponent = formComponent.component;
         this.lcModa.title = '流程表单预览：'+formComponent.text;
         this.lcModa.visible = true;
@@ -587,7 +654,7 @@
       /*查看流程图片*/
       showResource(row) {
           this.viewTitle = "流程图片预览(" + row.diagramName + ")";
-          this.diagramUrl = `${this.doMian}${this.url.img}?id=${row.id}`;
+          this.diagramUrl = `${window._CONFIG['domianURL']}${this.url.img}?id=${row.id}`;
           this.viewImage = true;
       },
       /*删除模型*/

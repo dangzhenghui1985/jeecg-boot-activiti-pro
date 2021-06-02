@@ -37,7 +37,7 @@
         </a-form>
       </div>
       <a-row>
-        <a-table  bordered
+        <a-table :scroll="scroll" bordered
           :loading="loading"
           rowKey="id"
           :dataSource="data"
@@ -88,7 +88,7 @@
               <span v-else style="color: #2f54eb"> 已激活 </span>
             </template>
           </a-table-column>
-          <a-table-column title="操作" dataIndex="action"  :width="170">
+          <a-table-column title="操作" dataIndex="action"  >
             <template slot-scope="t,r,i" >
               <template v-if="r.isSuspended">
                 <a href="javascript:void(0);" style="color: green;" @click="editStatus(1,r)" >激活</a>
