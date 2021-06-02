@@ -6,6 +6,7 @@ import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.jeecg.common.util.oConvertUtils;
 import org.springframework.boot.SpringApplication;
 //import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
@@ -22,6 +23,9 @@ import java.net.UnknownHostException;
 */
 @Slf4j
 @SpringBootApplication
+@EnableAutoConfiguration(exclude = {org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class,
+        org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration.class
+        ,org.activiti.spring.boot.SecurityAutoConfiguration.class})
 public class JeecgSystemApplication extends SpringBootServletInitializer {
 
     @Override
@@ -43,5 +47,4 @@ public class JeecgSystemApplication extends SpringBootServletInitializer {
                 "----------------------------------------------------------");
 
     }
-
 }

@@ -69,7 +69,24 @@ export const JeecgListMixin = {
         head['tenant-id'] = tenantid
       }
       return head;
-    }
+    },
+    scroll:function(){
+      var width = window.innerWidth;
+      let $antTable = window.document.getElementsByClassName("ant-row");
+      if ($antTable[0]){
+        width = $antTable[0].clientWidth;
+      }
+      console.log("$antTable",$antTable)
+      return {
+        // x:'max-content',
+        x:width,
+        y:window.innerHeight/2,
+      }
+    },
+    innerHeight:function(){
+      var innerHeight = window.innerHeight;
+      return  innerHeight;
+    },
   },
   methods:{
     loadData(arg) {

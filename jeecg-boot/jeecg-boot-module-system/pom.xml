@@ -39,7 +39,11 @@
 			<artifactId>jeewx-api</artifactId>
 			<version>1.4.2</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.jeecgframework.boot</groupId>
+			<artifactId>jeecg-boot-module-activiti</artifactId>
+			<version>2.4.5</version>
+		</dependency>
 		<dependency>
 			<groupId>org.jeecgframework.boot</groupId>
 			<artifactId>jeecg-boot-module-demo</artifactId>

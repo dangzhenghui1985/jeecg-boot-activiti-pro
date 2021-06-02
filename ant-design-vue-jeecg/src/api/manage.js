@@ -97,7 +97,14 @@ export function saveService(parameter) {
     data: parameter
   })
 }
-
+//post
+export function postFormAction(url,parameter) {
+  return axios({
+    url: url,
+    method:'post' ,
+    params: parameter
+  })
+}
 /**
  * 下载文件 用于excel导出
  * @param url
