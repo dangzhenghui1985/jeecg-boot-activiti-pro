@@ -1,7 +1,7 @@
 <template>
   <a-card :bordered="false">
     <!-- 查询区域 -->
-    <div class="table-page-search-wrapper">
+    <div class="table-page-search-wrapper" v-show="showToolbar">
       <a-form layout="inline" @keyup.enter.native="searchQuery">
         <a-row :gutter="24">
           <a-col :md="6" :sm="8">
@@ -59,7 +59,7 @@
     </div>
 
     <!-- table区域-begin -->
-    <a-table :scroll="scroll" bordered
+    <a-table :scroll="scroll" :bordered="false"
       ref="table"
       size="middle"
       rowKey="id"
@@ -116,7 +116,7 @@
           <span> {{t}} </span>
         </template>
       </a-table-column>-->
-      <a-table-column title="操作" dataIndex=""  align="center">
+      <a-table-column title="操作" dataIndex="" fixed="right"  align="center" :width="250">
         <template slot-scope="t,r,i">
           <template v-if="r.status == 0">
             <a href="javascript:void(0);" style="color: #00A0E9" @click="apply(r)" >提交申请</a>
@@ -263,6 +263,11 @@
   import historicDetail from '@/views/activiti/historicDetail'
   export default {
     name: "applyList",
+    props:{
+      showToolbar: {
+        default: true
+      },
+    },
     mixins:[activitiMixin,JeecgListMixin],
     components: {
       JEllipsis

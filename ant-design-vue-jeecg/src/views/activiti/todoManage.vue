@@ -3,10 +3,10 @@
   @import '~@assets/less/common.less';
 </style>
 <template>
-  <div class="search">
+  <div class="search" >
 
     <a-card>
-      <div class="table-page-search-wrapper">
+      <div class="table-page-search-wrapper" v-show="showToolbar">
         <a-form layout="inline" @keyup.enter.native="handleSearch">
           <a-row :gutter="24">
             <a-col :md="6" :sm="8">
@@ -33,10 +33,11 @@
         <a-button @click="getDataList" icon="md-refresh">刷新</a-button>
       </a-row>-->
       <a-row>
-        <a-table :scroll="scroll" bordered
+        <a-table :scroll="scroll" :bordered="false"
           :loading="loading" rowKey="id"
           :dataSource="data"
           :pagination="ipagination" @change="handleTableChange"
+                 size="middle"
           ref="table"
         >
           <a-table-column title="#"  :width="50">
@@ -54,7 +55,7 @@
               <span> {{t}} </span>
             </template>
           </a-table-column>
-          <a-table-column title="委托人" dataIndex="owner"  align="center" :width="150">
+          <a-table-column v-if="showToolbar" title="委托人" dataIndex="owner"  align="center" :width="150">
             <template slot-scope="t">
               <span> {{t}} </span>
             </template>
@@ -87,7 +88,7 @@
               <span>{{t}}</span>
             </template>
           </a-table-column>
-          <a-table-column title="操作" dataIndex=""  align="center">
+          <a-table-column title="操作" :width="250" dataIndex="" fixed="right"  align="center">
             <template slot-scope="t,r,i">
               <a href="javascript:void(0);" @click="detail(r)" style="color: blue">查看并处理</a>
               <a-divider type="vertical" />
@@ -194,6 +195,11 @@ export default {
   name: "todo-manage",
   mixins:[activitiMixin,JeecgListMixin],
   components:{JSelectUserByDep},
+  props:{
+    showToolbar: {
+      default: true
+    },
+  },
   data() {
     return {
       openSearch: true,

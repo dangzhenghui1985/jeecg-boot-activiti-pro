@@ -79,8 +79,8 @@ export const JeecgListMixin = {
       console.log("$antTable",$antTable)
       return {
         // x:'max-content',
-        x:width,
-        y:window.innerHeight/2,
+        x:width/2,
+        y:window.innerHeight,
       }
     },
     innerHeight:function(){
