@@ -22,6 +22,12 @@ export const activitiMixin = {
           routeName:'@/views/activiti/form/demoForm',
           component:() => import(`@/views/activiti/form/demoForm`),
           businessTable:'test_demo'
+        },
+        {
+          text:'请假申请',
+          routeName:'@/views/oa/modules/AppLeaveForm',
+          component:() => import(`@/views/oa/modules/AppLeaveForm`),
+          businessTable:'app_leave'
         }
       ]
     },

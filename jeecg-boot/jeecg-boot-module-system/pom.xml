@@ -42,7 +42,12 @@
 		<dependency>
 			<groupId>org.jeecgframework.boot</groupId>
 			<artifactId>jeecg-boot-module-activiti</artifactId>
-			<version>2.4.5</version>
+			<version>${jeecgboot.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jeecgframework.boot</groupId>
+			<artifactId>jeecg-boot-module-activiti</artifactId>
+			<version>${jeecgboot.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jeecgframework.boot</groupId>

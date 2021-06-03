@@ -289,4 +289,6 @@ public interface ISysBaseAPI extends CommonAPI {
      * @param orgCode
      */
     List<Map> getDeptUserByOrgCode(String orgCode);
+
+    public JSONObject parseDict(Object record);
 }

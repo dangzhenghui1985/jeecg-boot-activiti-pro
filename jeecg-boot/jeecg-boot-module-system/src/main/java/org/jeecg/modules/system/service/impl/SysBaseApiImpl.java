@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.api.dto.message.*;
+import org.jeecg.common.aspect.DictAspect;
 import org.jeecg.common.aspect.UrlMatchEnum;
 import org.jeecg.common.constant.CacheConstant;
 import org.jeecg.common.constant.CommonConstant;
@@ -50,7 +51,7 @@ import java.util.*;
 /**
  * @Description: 底层共通业务API，提供其他独立模块调用
  * @Author: scott
- * @Date:2019-4-20 
+ * @Date:2019-4-20
  * @Version:V1.0
  */
 @Slf4j
@@ -96,6 +97,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 	private ThirdAppWechatEnterpriseServiceImpl wechatEnterpriseService;
 	@Autowired
 	private ThirdAppDingtalkServiceImpl dingtalkService;
+
+	@Autowired
+	private DictAspect dictAspect;
 
 	@Override
 	@Cacheable(cacheNames=CacheConstant.SYS_USERS_CACHE, key="#username")
@@ -1065,6 +1069,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 			return list;
 		}
 		return null;
+	}
+
+	@Override
+	public JSONObject parseDict(Object record) {
+		return dictAspect.parseDict(record);
 	}
 
 }

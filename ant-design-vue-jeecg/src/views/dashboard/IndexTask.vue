@@ -80,22 +80,37 @@
       </a-col>
     </a-row>
     <!--流程表单-->
-    <a-modal
+
+    <j-modal
       :title="lcModa.title"
-      v-model="lcModa.visible"
-      :footer="null"
-      :maskClosable="false"
-      width="80%">
+      :width="800"
+      :visible="lcModa.visible"
+      switchFullscreen
+      @ok="handleOk"
+      :okButtonProps="{ class:{'jee-hidden': !lcModa.isNew} }"
+      @cancel="handleCancel"
+      cancelText="关闭">
       <component
+        ref="realForm"
         :disabled="lcModa.disabled"
         v-if="lcModa.visible"
         :is="lcModa.formComponent"
-        :processData="lcModa.processData"
-        :isNew = "lcModa.isNew"
+        :formBpm="!lcModa.isNew"
+        :formData="loadData.processData"
         @afterSubmit="afterSub"
         @close="lcModa.visible=false,lcModa.disabled = false">
       </component>
-    </a-modal>
+    </j-modal>
+
+
+<!--    <a-modal-->
+<!--      :title="lcModa.title"-->
+<!--      v-model="lcModa.visible"-->
+<!--      :footer="null"-->
+<!--      :maskClosable="false"-->
+<!--      width="80%">-->
+<!--      -->
+<!--    </a-modal>-->
     <!--提交申请表单-->
     <a-modal title="提交申请" v-model="modalVisible" :mask-closable="false" :width="500" :footer="null">
       <div v-if="modalVisible">
@@ -161,6 +176,7 @@ import {initDictOptions, filterDictText} from '@/components/dict/JDictSelectUtil
 import historicDetail from '@/views/activiti/historicDetail'
 import TodoManage from '@views/activiti/todoManage'
 import ApplyList from '@views/activiti/applyList'
+import {activitiFormMixin} from "@views/activiti/mixins/activitiFormMixin";
 
 export default {
   name: "analysis",
@@ -411,6 +427,16 @@ export default {
     },
     feedbackSent() {
       this.feedbackVisible = false;
+    },
+    handleOk () {
+
+      this.$refs.realForm.model;
+    },
+    close () {
+      this.lcModa.visible = false;
+    },
+    handleCancel () {
+      this.close()
     }
   }
 }
