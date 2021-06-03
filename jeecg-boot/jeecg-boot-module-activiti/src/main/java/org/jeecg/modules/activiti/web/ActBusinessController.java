@@ -3,6 +3,7 @@ package org.jeecg.modules.activiti.web;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -13,11 +14,14 @@ import org.activiti.engine.TaskService;
 import org.activiti.engine.task.Task;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.IActBizService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.aspect.annotation.AutoLog;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.common.util.UUIDGenerator;
+import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.modules.activiti.entity.*;
 import org.jeecg.modules.activiti.service.Impl.ActBusinessServiceImpl;
 import org.jeecg.modules.activiti.service.Impl.ActZprocessServiceImpl;
@@ -59,15 +63,27 @@ public class ActBusinessController {
     public Result add(@ApiParam(value = "流程定义Id" ,required = true) String procDefId,
                       @ApiParam(value = "申请标题" ,required = true) String procDeTitle,
                       @ApiParam(value = "数据表名" ,required = true) String tableName,
-                       HttpServletRequest request){
+                       HttpServletRequest request,@RequestBody(required = false) JSONObject body){
         /*保存业务表单数据到数据库表*/
         String tableId = IdUtil.simpleUUID();
         //如果前端上传了id
         String id = request.getParameter("id");
+
+        boolean isNew=StrUtil.isEmpty(id)?true:false;
         if( id != null && !id.equals("")){
             tableId = id;
         }
-        boolean isNew = actBusinessService.saveApplyForm(tableId, request);
+        if (SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl")!=null&&SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl") instanceof IActBizService){
+            IActBizService bizService=(IActBizService) SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl");
+            Result preCheckResult=bizService.preCheck(request);
+            if(!preCheckResult.isSuccess()){
+                return preCheckResult;
+            }
+            tableId= bizService.ActSave(body);
+        }
+        else {
+            isNew=  actBusinessService.saveApplyForm(tableId,request);
+        }
         ActBusiness actBusiness = new ActBusiness();
         if (isNew){
             // 新增数据 保存至我的申请业务
@@ -88,7 +104,7 @@ public class ActBusinessController {
         } else {
             actBusiness = actBusinessService.getOne(new LambdaQueryWrapper<ActBusiness>().eq(ActBusiness::getTableId,tableId).last("limit 1"));
         }
-        return Result.ok(actBusiness);
+        return Result.OK(actBusiness);
     }
     /*获取业务表单信息*/
     @AutoLog(value = "流程-获取业务表单信息")
@@ -99,17 +115,33 @@ public class ActBusinessController {
         if (StrUtil.isBlank(tableName)){
             return Result.error("参数缺省！");
         }
-        Map<String, Object> applyForm = actBusinessService.getApplyForm(tableId, tableName);
-        return Result.ok(applyForm);
+        Map<String, Object> applyForm=new HashMap<>();
+        if (SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl")!=null&&SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl") instanceof IActBizService){
+            IActBizService bizService=(IActBizService) SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl");
+            applyForm= bizService.getFormById(tableId);
+        }else {
+            applyForm = new JSONObject(actBusinessService.getApplyForm(tableId, tableName));
+        }
+        return Result.OK(applyForm);
     }
     /*修改业务表单信息*/
     @AutoLog(value = "流程-修改业务表单信息")
     @ApiOperation(value="流程-修改业务表单信息", notes="业务表单参数数据一并传过来!")
     @RequestMapping(value = "/editForm", method = RequestMethod.POST)
     public Result editForm(@ApiParam(value = "业务表数据id" ,required = true)String id,
-                           HttpServletRequest request){
-        /*保存业务表单数据到数据库表*/
-        actBusinessService.saveApplyForm(id, request);
+                           HttpServletRequest request,@RequestBody(required = false) JSONObject body){
+        String tableName = request.getParameter("tableName");
+        if (SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl")!=null&&SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl") instanceof IActBizService){
+            IActBizService bizService=(IActBizService) SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl");
+            Result preCheckResult=bizService.preCheck(request);
+            if(!preCheckResult.isSuccess()){
+                return preCheckResult;
+            }
+            bizService.ActSave(body);
+        }else {
+            /*保存业务表单数据到数据库表*/
+            actBusinessService.saveApplyForm(id, request);
+        }
 
         LambdaQueryWrapper<ActBusiness> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ActBusiness::getTableId, id);
@@ -119,7 +151,7 @@ public class ActBusinessController {
         Map<String, String> map = new HashMap<>();
         map.put("id", actBusiness.getId());
 
-        return Result.ok(map);
+        return Result.OK(map);
     }
     /*通过id删除草稿状态申请*/
     @AutoLog(value = "流程-通过id删除草稿状态申请")
@@ -136,7 +168,7 @@ public class ActBusinessController {
             actBusinessService.deleteBusiness(actBusiness.getTableName(), actBusiness.getTableId());
             actBusinessService.removeById(id);
         }
-        return Result.ok("删除成功");
+        return Result.OK("删除成功");
     }
     /*提交申请 启动流程*/
     @AutoLog(value = "流程-提交申请 启动流程")
@@ -164,7 +196,14 @@ public class ActBusinessController {
         actBusinessService.updateById(actBusiness);
         //修改业务表的流程字段
         actBusinessService.updateBusinessStatus(actBusiness.getTableName(), actBusiness.getTableId(),"启动");
-        return Result.ok("操作成功");
+
+        //业务表callback
+        if (SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl")!=null&&SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl") instanceof IActBizService) {
+            IActBizService bizService = (IActBizService) SpringContextUtils.getBean(oConvertUtils.camelName(tableName) + "ServiceImpl");
+            bizService.startCallBack(tableId);
+
+        }
+        return Result.OK("操作成功");
     }
     /*撤回申请*/
     @AutoLog(value = "流程-撤回申请")
@@ -191,7 +230,7 @@ public class ActBusinessController {
     @ApiOperation(value = "流程-流程列表", notes = "流程列表，登录用户的流程列表")
     @RequestMapping(value = "/listData", method = RequestMethod.GET)
     public Result listData(ActBusiness param, HttpServletRequest request) {
-        return Result.ok(actBusinessService.approveList(request, param));
+        return Result.OK(actBusinessService.approveList(request, param));
     }
 
     @AutoLog(value = "流程-查询流程类型")
@@ -199,7 +238,7 @@ public class ActBusinessController {
     @RequestMapping(value = "/actZProcess", method = RequestMethod.GET)
     public Result listData(HttpServletRequest request) {
         List<ActZprocess> list = actZprocessService.list();
-        return Result.ok(list);
+        return Result.OK(list);
     }
 
     @AutoLog(value = "流程-查询申请列表 与 已办列表的合集")
@@ -255,6 +294,6 @@ public class ActBusinessController {
         }
 
 
-        return Result.ok(list);
+        return Result.OK(list);
     }
 }

@@ -9,7 +9,7 @@ public interface IActBizService {
     public String ActSave(JSONObject req);
     public JSONObject getFormById(String id);
     public default Result preCheck(HttpServletRequest request){
-        return Result.ok();
+        return Result.OK();
     }
     public default void finishCallBack(String id){};
     public default void startCallBack(String id){ };

@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.Api;
@@ -26,10 +28,13 @@ import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.IActBizService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.aspect.annotation.AutoLog;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
+import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.modules.activiti.entity.*;
 import org.jeecg.modules.activiti.service.Impl.ActBusinessServiceImpl;
 import org.jeecg.modules.activiti.service.Impl.ActZprocessServiceImpl;
@@ -419,6 +424,13 @@ public class ActTaskController {
                         }
                     }
                 }else{
+
+                    String  tableName=actBusiness.getTableName();
+                    if (SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl")!=null&&SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl") instanceof IActBizService) {
+                        IActBizService bizService = (IActBizService) SpringContextUtils.getBean(oConvertUtils.camelName(actBusiness.getTableName()) + "ServiceImpl");
+
+                        bizService.taskCompletCallBack(JSONObject.parseObject(JSONUtil.parseObj(t).toJSONString(0)),JSONObject.parseObject(JSONUtil.parseObj(actBusiness).toJSONString(0)));
+                    }
                     // 避免重复添加
                     List<String> list = actBusinessService.selectIRunIdentity(t.getId(), ActivitiConstant.EXECUTOR_candidate);
                     if(list==null||list.size()==0) {
@@ -443,6 +455,13 @@ public class ActTaskController {
                     String.format("您的 【%s】 申请已通过！",actBusiness.getTitle()),sendMessage, sendSms, sendEmail);
             //修改业务表的流程字段
             actBusinessService.updateBusinessStatus(actBusiness.getTableName(), actBusiness.getTableId(),"审批通过");
+            //业务callback
+            String  tableName=actBusiness.getTableName();
+            if (SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl")!=null&&SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl") instanceof IActBizService) {
+                IActBizService bizService = (IActBizService) SpringContextUtils.getBean(oConvertUtils.camelName(actBusiness.getTableName()) + "ServiceImpl");
+                bizService.finishCallBack(actBusiness.getTableId());
+            }
+
 
         }
         // 记录实际审批人员
