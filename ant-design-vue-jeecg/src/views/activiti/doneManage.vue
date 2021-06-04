@@ -93,7 +93,7 @@
               <span> {{t}} </span>
             </template>
           </a-table-column>
-          <a-table-column title="操作" dataIndex="action"   align="center">
+          <a-table-column title="操作" dataIndex="action" :width="220"   align="center">
             <template slot-scope="t,r,i">
               <a href="javascript:void(0);" @click="detail(r)" >表单数据</a>
               <a-divider type="vertical" />
@@ -114,11 +114,24 @@
       </div>
     </a-modal>
     <!--流程表单-->
-    <a-modal :title="lcModa.title" v-model="lcModa.visible" :footer="null" :maskClosable="false" width="80%">
-      <component :disabled="lcModa.disabled" v-if="lcModa.visible" :is="lcModa.formComponent"
-                 :processData="lcModa.processData" :isNew = "lcModa.isNew"
-                 @close="lcModa.visible=false,lcModa.disabled = false"></component>
-    </a-modal>
+    <j-modal
+      :title="lcModa.title"
+      :width="800"
+      :visible="lcModa.visible"
+      switchFullscreen
+      :okButtonProps="{ class:{'jee-hidden': lcModa.disabled} }"
+      @cancel="handleCancel"
+      cancelText="关闭">
+      <component
+        ref="realForm"
+        :disabled="lcModa.disabled"
+        v-if="lcModa.visible"
+        :is="lcModa.formComponent"
+        :formBpm="!lcModa.isNew"
+        :formData="{dataId:lcModa.processData.tableId,disabled:this.lcModa.disabled}"
+        @close="lcModa.visible=false,lcModa.disabled = false">
+      </component>
+    </j-modal>
   </div>
 </template>
 
@@ -213,6 +226,12 @@ export default {
         );
         return;
       }
+      this.lcModa.disabled = true;
+      this.lcModa.title = '查看流程业务信息：'+r.processName;
+      this.lcModa.formComponent = this.getFormComponent(r.routeName).component;
+      this.lcModa.processData = r;
+      this.lcModa.isNew = false;
+      this.lcModa.visible = true;
     },
     history(r) {
       if (!r.procInstId) {
@@ -222,13 +241,13 @@ export default {
       this.procInstId = r.procInstId;
       this.modalLsVisible = true;
 
-      this.lcModa.disabled = true
-      this.lcModa.title = '查看流程业务信息：' + r.processName
-      this.lcModa.formComponent = this.getFormComponent(r.routeName).component
-      this.lcModa.processData = r
-      this.lcModa.isNew = false
-      this.lcModa.isTask = true
-      this.lcModa.visible = true
+      // this.lcModa.disabled = true
+      // this.lcModa.title = '查看流程业务信息：' + r.processName
+      // this.lcModa.formComponent = this.getFormComponent(r.routeName).component
+      // this.lcModa.processData = r
+      // this.lcModa.isNew = false
+      // this.lcModa.isTask = true
+      // this.lcModa.visible = true
 
     },
     remove(v) {
@@ -250,6 +269,12 @@ export default {
       }
       this.ipagination = pagination;
       // this.loadData();
+    },
+    close () {
+      this.lcModa.visible = false;
+    },
+    handleCancel () {
+      this.close()
     },
   },
   watch: {

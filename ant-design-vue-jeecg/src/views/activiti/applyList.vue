@@ -309,10 +309,10 @@
           getFirstNode:'/actProcessIns/getFirstNode',
           applyBusiness:'/actBusiness/apply',
           cancelApply:'/actBusiness/cancel',
+          getForm:'/actBusiness/getForm',
+          addApply:'/actBusiness/add',
+          editForm:'/actBusiness/editForm',
         },
-        getForm:'/actBusiness/getForm',
-        addApply:'/actBusiness/add',
-        editForm:'/actBusiness/editForm',
         // 查询条件
         queryParam: {
           createTimeRange:[],
@@ -652,17 +652,19 @@
       },
       handleOk () {
         this.$refs.realForm.$refs.form.validate(valid =>{
-          let url=this.addApply
+          let url=this.url.addApply
           if (this.$refs.realForm.model.id){
-            url=this.editForm;
+            url=this.url.
+              editForm;
           }
+          debugger
+          console.log(this.lcModa.processData)
           if (valid){
             let param={
               "id":   this.$refs.realForm.model.id,
               "procDeTitle":  this.lcModa.processData.title,
               "tableName":  this.lcModa.processData.tableName
             }
-            debugger
             this.postFormAction(url, param,this.$refs.realForm.model).then((res)=>{
               if (res.success){
                 this.$message.success("保存成功！")

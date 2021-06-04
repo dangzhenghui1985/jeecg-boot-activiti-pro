@@ -88,7 +88,7 @@
               <span v-else style="color: #2f54eb"> 已激活 </span>
             </template>
           </a-table-column>
-          <a-table-column title="操作" dataIndex="action"  >
+          <a-table-column title="操作" dataIndex="action" fixed="right" :width="280" >
             <template slot-scope="t,r,i" >
               <template v-if="r.isSuspended">
                 <a href="javascript:void(0);" style="color: green;" @click="editStatus(1,r)" >激活</a>
@@ -135,11 +135,31 @@
       </div>
     </a-modal>
     <!--流程表单-->
-    <a-modal :title="lcModa.title" v-model="lcModa.visible" :footer="null" :maskClosable="false" width="80%">
+
+
+    <j-modal
+      :title="lcModa.title"
+      :width="800"
+      :visible="lcModa.visible"
+      switchFullscreen
+      :okButtonProps="{ class:{'jee-hidden': lcModa.disabled} }"
+      @cancel="handleCancel"
+      cancelText="关闭">
+      <component
+        ref="realForm"
+        :disabled="lcModa.disabled"
+        v-if="lcModa.visible"
+        :is="lcModa.formComponent"
+        :formBpm="!lcModa.isNew"
+        :formData="{dataId:lcModa.processData.tableId,disabled:this.lcModa.disabled}"
+        @close="lcModa.visible=false,lcModa.disabled = false">
+      </component>
+    </j-modal>
+<!--    <a-modal :title="lcModa.title" v-model="lcModa.visible" :footer="null" :maskClosable="false" width="80%">
       <component :disabled="lcModa.disabled" v-if="lcModa.visible" :is="lcModa.formComponent"
                  :processData="lcModa.processData" :isNew = "lcModa.isNew"
                  @close="lcModa.visible=false,lcModa.disabled = false"></component>
-    </a-modal>
+    </a-modal>-->
   </div>
 </template>
 
@@ -302,7 +322,13 @@ export default {
       }
       this.ipagination = pagination;
       // this.loadData();
-    }
+    },
+    close () {
+      this.lcModa.visible = false;
+    },
+    handleCancel () {
+      this.close()
+    },
   },
   mounted() {
     this.init();

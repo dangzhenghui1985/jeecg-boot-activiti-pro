@@ -140,11 +140,24 @@
       </div>
     </a-modal>
     <!--流程表单-->
-    <a-modal :title="lcModa.title" v-model="lcModa.visible" :footer="null" :maskClosable="false" width="80%">
-      <component :disabled="lcModa.disabled" v-if="lcModa.visible" :is="lcModa.formComponent"
-                 :processData="lcModa.processData" :isNew = "lcModa.isNew"
-                 @close="lcModa.visible=false,lcModa.disabled = false"></component>
-    </a-modal>
+    <j-modal
+      :title="lcModa.title"
+      :width="800"
+      :visible="lcModa.visible"
+      switchFullscreen
+      :okButtonProps="{ class:{'jee-hidden': lcModa.disabled} }"
+      @cancel="handleCancel"
+      cancelText="关闭">
+      <component
+        ref="realForm"
+        :disabled="lcModa.disabled"
+        v-if="lcModa.visible"
+        :is="lcModa.formComponent"
+        :formBpm="!lcModa.isNew"
+        :formData="{dataId:lcModa.processData.tableId,disabled:this.lcModa.disabled}"
+        @close="lcModa.visible=false,lcModa.disabled = false">
+      </component>
+    </j-modal>
   </div>
 </template>
 
@@ -261,6 +274,12 @@ export default {
           this.$message.error(res.message);
         }
       });
+    },
+    close () {
+      this.lcModa.visible = false;
+    },
+    handleCancel () {
+      this.close()
     },
   },
   mounted() {
