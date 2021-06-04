@@ -150,7 +150,7 @@
           {
             title:'流程状态',
             align:"center",
-            dataIndex: 'bpmStatus_dictText'
+            dataIndex: 'actStatus'
           },
           {
             title: '操作',
@@ -216,7 +216,7 @@
         fieldList.push({type:'date',value:'startTime',text:'开始时间'})
         fieldList.push({type:'date',value:'endTime',text:'结束时间'})
         fieldList.push({type:'string',value:'days',text:'天数',dictCode:''})
-        fieldList.push({type:'string',value:'bpmStatus',text:'流程状态',dictCode:'bpm_status'})
+        fieldList.push({type:'string',value:'bpmStatus',text:'流程状态',dictCode:'act_status'})
         this.superFieldList = fieldList
       }
     }
