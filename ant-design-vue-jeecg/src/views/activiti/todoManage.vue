@@ -90,17 +90,17 @@
           </a-table-column>
           <a-table-column title="操作" :width="250" dataIndex="" fixed="right"  align="center">
             <template slot-scope="t,r,i">
-              <a href="javascript:void(0);" @click="detail(r)" style="color: blue">查看并处理</a>
+              <a href="javascript:void(0);" @click="detail(r)" style="color: blue">查看</a>
               <a-divider type="vertical" />
               <span v-if="Boolean(r.isSuspended)" style="cursor: no-drop;color: #999999;" title="流程已被挂起，无法操作！">
                 查看并处理 <a-divider type="vertical" />
                 委托他人代办 <a-divider type="vertical" />
               </span>
               <span v-else>
-                <!--<a href="javascript:void(0);" @click="passTask(r)" style="color: green">通过</a>
+                <a href="javascript:void(0);" @click="passTask(r)" style="color: green">通过</a>
                 <a-divider type="vertical" />
                 <a href="javascript:void(0);" @click="backTask(r)" style="color: orange">驳回</a>
-                <a-divider type="vertical" />-->
+                <a-divider type="vertical" />
                 <a href="javascript:void(0);" @click="delegateTask(r)" style="color: #00A0E9">委托他人代办</a>
                 <a-divider type="vertical" />
               </span>
@@ -117,14 +117,35 @@
       </div>
     </a-modal>
     <!--流程表单-->
-    <a-modal :title="lcModa.title" v-model="lcModa.visible" :footer="null" :maskClosable="false" width="80%">
-      <component :disabled="lcModa.disabled" v-if="lcModa.visible" :is="lcModa.formComponent"
-                 :processData="lcModa.processData" :isNew = "lcModa.isNew"
-                 :task="true"
-                 @passTask = "()=>passTask(lcModa.processData)"
-                 @backTask = "()=>backTask(lcModa.processData)"
-                 @close="lcModa.visible=false,lcModa.disabled = false"></component>
-    </a-modal>
+    <j-modal
+      :title="lcModa.title"
+      :width="800"
+      :visible="lcModa.visible"
+      switchFullscreen
+      @ok="passTask"
+      :okButtonProps="{ class:{'jee-hidden': lcModa.disabled} }"
+      @cancel="handleCancel"
+      cancelText="关闭">
+      <component
+        ref="realForm"
+        :disabled="lcModa.disabled"
+        v-if="lcModa.visible"
+        :is="lcModa.formComponent"
+        :formBpm="!lcModa.isNew"
+        :formData="{dataId:lcModa.processData.tableId,disabled:this.lcModa.disabled}"
+        @close="lcModa.visible=false,lcModa.disabled = false">
+      </component>
+    </j-modal>
+<!--    <a-modal :title="lcModa.title" v-model="lcModa.visible" :footer="null" :maskClosable="false" width="80%">-->
+<!--      <component :disabled="lcModa.disabled" v-if="lcModa.visible" :is="lcModa.formComponent"-->
+<!--                 :processData="lcModa.processData" :isNew = "lcModa.isNew"-->
+<!--                 :task="true"-->
+<!--                 @passTask = "()=>passTask(lcModa.processData)"-->
+<!--                 @backTask = "()=>backTask(lcModa.processData)"-->
+<!--                 @close="lcModa.visible=false,lcModa.disabled = false"></component>-->
+<!--    </a-modal>-->
+
+
     <!-- 审批操作 -->
     <a-modal :title="modalTaskTitle" v-model="modalTaskVisible" :mask-closable="false" :width="500">
 
@@ -560,7 +581,13 @@ export default {
           });
         }
       });
-    }
+    },
+    close () {
+      this.lcModa.visible = false;
+    },
+    handleCancel () {
+      this.close()
+    },
   },
 
 };

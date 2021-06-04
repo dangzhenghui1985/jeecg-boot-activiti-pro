@@ -240,7 +240,10 @@ export default {
       procInstId: '',
       modalCancelVisible: false,
       cancelForm: {},
-      feedbackVisible: false
+      feedbackVisible: false,
+      getForm:'/actBusiness/getForm',
+      addApply:'/actBusiness/add',
+      editForm:'/actBusiness/editForm',
     }
   },
   computed:{
@@ -429,8 +432,31 @@ export default {
       this.feedbackVisible = false;
     },
     handleOk () {
+      this.$refs.realForm.$refs.form.validate(valid =>{
+        let url=this.addApply
+        if (this.$refs.realForm.model.id){
+          url=this.editForm;
+        }
+        if (valid){
+          let param={
+         "procDefId":   this.lcModa.processData.id,
+          "procDeTitle":  this.lcModa.processData.name,
+          "tableName":  this.lcModa.processData.businessTable
+          }
+          this.postFormAction(url, param,this.$refs.realForm.model).then((res)=>{
+            if (res.success){
+              this.$message.success("保存成功！")
+              this.afterSub();
+            }else {
+              this.$message.error(res.message)
+            }
+          }).finally(()=>{
+            this.lcModa.visible = false;
+          })
+        }
+      })
 
-      this.$refs.realForm.model;
+
     },
     close () {
       this.lcModa.visible = false;
@@ -438,6 +464,7 @@ export default {
     handleCancel () {
       this.close()
     }
+
   }
 }
 </script>

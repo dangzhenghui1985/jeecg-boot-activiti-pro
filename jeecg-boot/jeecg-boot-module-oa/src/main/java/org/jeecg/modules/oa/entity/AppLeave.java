@@ -75,4 +75,8 @@ public class AppLeave implements Serializable {
 	@Dict(dicCode = "bpm_status")
     @ApiModelProperty(value = "流程状态")
     private java.lang.String bpmStatus;
+    /**流程状态*/
+    @Excel(name = "流程信息", width = 15, dicCode = "bpm_status")
+    @ApiModelProperty(value = "流程信息")
+    private java.lang.String actStatus;
 }

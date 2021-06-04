@@ -89,11 +89,11 @@
         return this.disabled
       },
       showFlowSubmitButton(){
-        if(this.formBpm===true){
-          if(this.formData.disabled===false){
-            return true
-          }
-        }
+        // if(this.formBpm===true){
+        //   if(this.formData.disabled===false){
+        //     return true
+        //   }
+        // }
         return false
       }
     },
@@ -148,7 +148,7 @@
               that.confirmLoading = false;
             })
           }
-         
+
         })
       },
     }

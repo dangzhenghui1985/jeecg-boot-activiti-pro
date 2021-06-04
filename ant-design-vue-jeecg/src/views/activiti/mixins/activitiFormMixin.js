@@ -14,7 +14,6 @@ export const activitiFormMixin = {
         getForm:'/actBusiness/getForm',
         addApply:'/actBusiness/add',
         editForm:'/actBusiness/editForm',
-        daysValidate:'/oa/oaLeave/validateDays',
       }
     }
   },

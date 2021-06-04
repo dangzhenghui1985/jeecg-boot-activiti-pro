@@ -98,11 +98,12 @@ export function saveService(parameter) {
   })
 }
 //post
-export function postFormAction(url,parameter) {
+export function postFormAction(url,parameter,body) {
   return axios({
     url: url,
     method:'post' ,
-    params: parameter
+    params: parameter,
+    data:body,
   })
 }
 /**

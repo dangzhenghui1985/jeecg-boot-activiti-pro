@@ -191,11 +191,35 @@
       </div>
     </a-drawer>
     <!--流程表单-->
-    <a-modal :title="lcModa.title" v-model="lcModa.visible" :footer="null" :maskClosable="false" width="80%">
-      <component :disabled="lcModa.disabled" v-if="lcModa.visible" :is="lcModa.formComponent"
-                 :processData="lcModa.processData" :isNew = "lcModa.isNew"
-                 @afterSubmit="afterSub" @close="lcModa.visible=false,lcModa.disabled = false"></component>
-    </a-modal>
+
+
+    <j-modal
+      :title="lcModa.title"
+      :width="800"
+      :visible="lcModa.visible"
+      switchFullscreen
+      @ok="handleOk"
+      :okButtonProps="{ class:{'jee-hidden': lcModa.disabled} }"
+      @cancel="handleCancel"
+      cancelText="关闭">
+      <component
+        ref="realForm"
+        :disabled="lcModa.disabled"
+        v-if="lcModa.visible"
+        :is="lcModa.formComponent"
+        :formBpm="!lcModa.isNew"
+        :formData="{dataId:lcModa.processData.tableId,disabled:this.lcModa.disabled}"
+        @afterSubmit="afterSub"
+        @close="lcModa.visible=false,lcModa.disabled = false">
+      </component>
+    </j-modal>
+
+<!--    -->
+<!--    <a-modal :title="lcModa.title" v-model="lcModa.visible" :footer="null" :maskClosable="false" width="80%">-->
+<!--      <component :disabled="lcModa.disabled" v-if="lcModa.visible" :is="lcModa.formComponent"-->
+<!--                 :processData="lcModa.processData" :isNew = "lcModa.isNew"-->
+<!--                 @afterSubmit="afterSub" @close="lcModa.visible=false,lcModa.disabled = false"></component>-->
+<!--    </a-modal>-->
     <!--提交申请表单-->
     <a-modal title="提交申请" v-model="modalVisible" :mask-closable="false" :width="500" :footer="null">
       <div v-if="modalVisible">
@@ -286,6 +310,9 @@
           applyBusiness:'/actBusiness/apply',
           cancelApply:'/actBusiness/cancel',
         },
+        getForm:'/actBusiness/getForm',
+        addApply:'/actBusiness/add',
+        editForm:'/actBusiness/editForm',
         // 查询条件
         queryParam: {
           createTimeRange:[],
@@ -535,7 +562,7 @@
           return;
         }
         isView = isView||false;
-        this.lcModa.disabled = isView;
+        this.lcModa.disabled =isView;
         this.lcModa.title = '修改流程业务信息：'+r.title;
         if (isView) this.lcModa.title = '查看流程业务信息：'+r.title;
         this.lcModa.formComponent = this.getFormComponent(r.routeName).component;
@@ -610,11 +637,46 @@
         this.lcModa.isNew = true;
         this.lcModa.processData = v;
         this.lcModa.visible = true;
+        this.lcModa.disabled=false
         console.log("发起",v)
       },
       afterSub(formData){
           this.lcModa.visible = false;
           this.loadData();
+      },
+      close () {
+        this.lcModa.visible = false;
+      },
+      handleCancel () {
+        this.close()
+      },
+      handleOk () {
+        this.$refs.realForm.$refs.form.validate(valid =>{
+          let url=this.addApply
+          if (this.$refs.realForm.model.id){
+            url=this.editForm;
+          }
+          if (valid){
+            let param={
+              "id":   this.$refs.realForm.model.id,
+              "procDeTitle":  this.lcModa.processData.title,
+              "tableName":  this.lcModa.processData.tableName
+            }
+            debugger
+            this.postFormAction(url, param,this.$refs.realForm.model).then((res)=>{
+              if (res.success){
+                this.$message.success("保存成功！")
+                this.afterSub();
+              }else {
+                this.$message.error(res.message)
+              }
+            }).finally(()=>{
+              this.lcModa.visible = false;
+            })
+          }
+        })
+
+
       },
 
     }
