@@ -428,7 +428,6 @@ public class ActTaskController {
                     String  tableName=actBusiness.getTableName();
                     if (SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl")!=null&&SpringContextUtils.getBean(oConvertUtils.camelName(tableName)+"ServiceImpl") instanceof IActBizService) {
                         IActBizService bizService = (IActBizService) SpringContextUtils.getBean(oConvertUtils.camelName(actBusiness.getTableName()) + "ServiceImpl");
-
                         bizService.taskCompletCallBack(JSONObject.parseObject(JSONUtil.parseObj(t).toJSONString(0)),JSONObject.parseObject(JSONUtil.parseObj(actBusiness).toJSONString(0)));
                     }
                     // 避免重复添加

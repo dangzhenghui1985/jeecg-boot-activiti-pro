@@ -26,9 +26,9 @@ import java.util.Date;
 @Accessors(chain = true)
 @ApiModel(value="act_z_process对象", description="流程定义扩展表")
 public class ActZprocess {
-    
+
 	/**id*/
-	@TableId(type = IdType.ID_WORKER_STR)
+	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "id")
 	private String id;
 	/**createBy*/

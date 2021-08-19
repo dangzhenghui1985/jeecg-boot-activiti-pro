@@ -26,9 +26,9 @@ import java.util.Date;
 @Accessors(chain = true)
 @ApiModel(value="act_z_node对象", description="流程节点扩展表")
 public class ActNode {
-    
+
 	/**id*/
-	@TableId(type = IdType.ID_WORKER_STR)
+	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "id")
 	private String id;
 	/**流程定义id*/

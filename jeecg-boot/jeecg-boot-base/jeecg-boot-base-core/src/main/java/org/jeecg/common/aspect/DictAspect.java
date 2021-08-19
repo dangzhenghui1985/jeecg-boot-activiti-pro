@@ -50,7 +50,7 @@ public class DictAspect {
 
     @Around("excudeService()")
     public Object doAround(ProceedingJoinPoint pjp) throws Throwable {
-    	long time1=System.currentTimeMillis();	
+    	long time1=System.currentTimeMillis();
         Object result = pjp.proceed();
         long time2=System.currentTimeMillis();
         log.debug("获取JSON数据 耗时："+(time2-time1)+"ms");
@@ -383,4 +383,39 @@ public class DictAspect {
         return textValue.toString();
     }
 
+    public JSONObject parseDict(Object record){
+        ObjectMapper mapper = new ObjectMapper();
+        String json="{}";
+        try {
+            //解决@JsonFormat注解解析不了的问题详见SysAnnouncement类的@JsonFormat
+            json = mapper.writeValueAsString(record);
+        } catch (JsonProcessingException e) {
+            log.error("json解析失败"+e.getMessage(),e);
+        }
+        JSONObject item = JSONObject.parseObject(json);
+        //update-begin--Author:scott -- Date:20190603 ----for：解决继承实体字段无法翻译问题------
+        //for (Field field : record.getClass().getDeclaredFields()) {
+        for (Field field : oConvertUtils.getAllFields(record)) {
+            //update-end--Author:scott  -- Date:20190603 ----for：解决继承实体字段无法翻译问题------
+            if (field.getAnnotation(Dict.class) != null) {
+                String code = field.getAnnotation(Dict.class).dicCode();
+                String text = field.getAnnotation(Dict.class).dicText();
+                String table = field.getAnnotation(Dict.class).dictTable();
+                String key = String.valueOf(item.get(field.getName()));
+
+                //翻译字典值对应的txt
+                String textValue = translateDictValue(code, text, table, key);
+
+                log.debug(" 字典Val : "+ textValue);
+                log.debug(" __翻译字典字段__ "+field.getName() + CommonConstant.DICT_TEXT_SUFFIX+"： "+ textValue);
+                item.put(field.getName() + CommonConstant.DICT_TEXT_SUFFIX, textValue);
+            }
+            //date类型默认转换string格式化日期
+            if (field.getType().getName().equals("java.util.Date")&&field.getAnnotation(JsonFormat.class)==null&&item.get(field.getName())!=null){
+                SimpleDateFormat aDate=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                item.put(field.getName(), aDate.format(new Date((Long) item.get(field.getName()))));
+            }
+        }
+        return item;
+    }
 }

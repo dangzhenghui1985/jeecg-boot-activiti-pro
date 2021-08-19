@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.api.dto.message.*;
+import org.jeecg.common.aspect.DictAspect;
 import org.jeecg.common.aspect.UrlMatchEnum;
 import org.jeecg.common.constant.CacheConstant;
 import org.jeecg.common.constant.CommonConstant;
@@ -58,6 +59,8 @@ import java.util.*;
 public class SysBaseApiImpl implements ISysBaseAPI {
 	/** 当前系统数据库类型 */
 	private static String DB_TYPE = "";
+	@Autowired
+	private DictAspect dictAspect;
 	@Autowired
 	private ISysMessageTemplateService sysMessageTemplateService;
 	@Resource
